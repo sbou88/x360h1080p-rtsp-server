@@ -59,7 +59,7 @@ bool fileExists(char* filePath) {
   return true;
 }
 
-void validateArgs(char* configPath, char* mainstreamPipe, char* substreamPipe) {
+void validateArgs(char* configPath, char* mainstreamPipe, char* substreamPipe, char* soundStreamPipe) {
 
   if(!fileExists(configPath)) {
     std::cout << "Configuration file does not exist.\n";
@@ -80,16 +80,21 @@ void validateArgs(char* configPath, char* mainstreamPipe, char* substreamPipe) {
     std::cout << "Substream input file does not exist.\n";
     exit(5);
   }
+  if(soundStreamPipe != NULL && !fileExists(soundStreamPipe)) {
+    std::cout << "SoundStreamPipe input file does not exist.\n";
+    exit(6);
+  }
 }
 
 void printUsage(char* binaryName) {
   std::cout << "Usage: ";
   std::cout << binaryName;
-  std::cout << " -c [CONFIG FILE] -m [MAINSTREAM FILE] -s [SUBSTREAM FILE]\n\n";
+  std::cout << " -c [CONFIG FILE] -m [MAINSTREAM FILE] -s [SUBSTREAM FILE] -a [SOUND_STREAM] FILE\n\n";
 
   std::cout << "Config file: path to configuration file\n";
   std::cout << "Mainstream file: mainstream input file\n";
   std::cout << "Substream file: substream input file\n";
+  std::cout << "Sound file: soundstream input file\n";
 }
 
 int main(int argc, char** argv) {
@@ -99,6 +104,7 @@ int main(int argc, char** argv) {
   char* configPath = (char*)"config.json";
   char* mainstreamPipe = NULL;
   char* substreamPipe = NULL;
+  char* soundStreamPipe = NULL;
   
   while ((opt = getopt (argc, argv, "m:s:c:h")) != -1)
   {
@@ -115,6 +121,9 @@ int main(int argc, char** argv) {
 			  substreamPipe = optarg;
 		  break;
 
+      case 'a':
+        soundStreamPipe = optarg;
+
       case 'h':
       default:
         printUsage(argv[0]);
@@ -128,7 +137,7 @@ int main(int argc, char** argv) {
     exit(6);
   }
 
-  validateArgs(configPath, mainstreamPipe, substreamPipe);
+  validateArgs(configPath, mainstreamPipe, substreamPipe, soundStreamPipe);
   
   // Read configuration
   std::ifstream configFile(configPath);
@@ -180,6 +189,15 @@ int main(int argc, char** argv) {
 		announceStream(rtspServer, sms, streamName, mainstreamPipe);
 	}
 	
+
+  if(soundStreamPipe != NULL) {
+    char const* streamName = "soundstream";
+    ServerMediaSession* sms = ServerMediaSession::createNew(*env, streamName, descriptionString);
+    sms->addSubsession(ADTSAudioFileServerMediaSubsession::createNew(*env, soundStreamPipe, reuseFirstSource));
+    rtspServer->addServerMediaSession(sms);
+    announceStream(rtspServer, sms, streamName, soundStreamPipe);
+  }
+
 	if(substreamPipe != NULL) {
 		char const* streamName = "substream";
 		
@@ -198,6 +216,15 @@ int main(int argc, char** argv) {
 		rtspServer->addServerMediaSession(sms);
 		announceStream(rtspServer, sms, streamName, mainstreamPipe);
 	}
+
+  
+  if(soundStreamPipe != NULL) {
+    char const* streamName = "soundstream";
+    ServerMediaSession* sms = ServerMediaSession::createNew(*env, streamName, descriptionString);
+    sms->addSubsession(ADTSAudioFileServerMediaSubsession::createNew(*env, soundStreamPipe, reuseFirstSource));
+    rtspServer->addServerMediaSession(sms);
+    announceStream(rtspServer, sms, streamName, soundStreamPipe);
+  }
 	
 	if(substreamPipe != NULL) {
 		char const* streamName = "substream";
