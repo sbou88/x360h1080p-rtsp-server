@@ -106,7 +106,7 @@ int main(int argc, char** argv) {
   char* substreamPipe = NULL;
   char* soundStreamPipe = NULL;
   
-  while ((opt = getopt (argc, argv, "m:s:c:h")) != -1)
+  while ((opt = getopt (argc, argv, "m:s:c:h:a")) != -1)
   {
 	  switch(opt) {
       case 'c':
@@ -123,7 +123,7 @@ int main(int argc, char** argv) {
 
       case 'a':
         soundStreamPipe = optarg;
-
+	break;
       case 'h':
       default:
         printUsage(argv[0]);
