@@ -59,7 +59,7 @@ bool fileExists(char* filePath) {
   return true;
 }
 
-void validateArgs(char* configPath, char* mainstreamPipe, char* substreamPipe, char* soundStreamPipe) {
+void validateArgs(char* configPath, char* mainstreamPipe, char* substreamPipe, char* audioStreamPipe) {
 
   if(!fileExists(configPath)) {
     std::cout << "Configuration file does not exist.\n";
@@ -80,8 +80,8 @@ void validateArgs(char* configPath, char* mainstreamPipe, char* substreamPipe, c
     std::cout << "Substream input file does not exist.\n";
     exit(5);
   }
-  if(soundStreamPipe != NULL && !fileExists(soundStreamPipe)) {
-    std::cout << "SoundStreamPipe input file does not exist.\n";
+  if(audioStreamPipe != NULL && !fileExists(audioStreamPipe)) {
+    std::cout << "audioStreamPipe input file does not exist.\n";
     exit(6);
   }
 }
@@ -89,12 +89,12 @@ void validateArgs(char* configPath, char* mainstreamPipe, char* substreamPipe, c
 void printUsage(char* binaryName) {
   std::cout << "Usage: ";
   std::cout << binaryName;
-  std::cout << " -c [CONFIG FILE] -m [MAINSTREAM FILE] -s [SUBSTREAM FILE] -a [SOUND_STREAM] FILE\n\n";
+  std::cout << " -c [CONFIG FILE] -m [MAINSTREAM FILE] -s [SUBSTREAM FILE] -a [AUDIO_STREAM] FILE\n\n";
 
   std::cout << "Config file: path to configuration file\n";
   std::cout << "Mainstream file: mainstream input file\n";
   std::cout << "Substream file: substream input file\n";
-  std::cout << "Sound file: soundstream input file\n";
+  std::cout << "Audio file: audiostream input file\n";
 }
 
 int main(int argc, char** argv) {
@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
   char* configPath = (char*)"config.json";
   char* mainstreamPipe = NULL;
   char* substreamPipe = NULL;
-  char* soundStreamPipe = NULL;
+  char* audioStreamPipe = NULL;
   
   while ((opt = getopt (argc, argv, "m:s:c:h:a")) != -1)
   {
@@ -122,9 +122,14 @@ int main(int argc, char** argv) {
 		  break;
 
       case 'a':
-        soundStreamPipe = optarg;
-	break;
+        audioStreamPipe = optarg;
+	    break;
+
       case 'h':
+        printUsage(argv[0]);
+        exit(0);
+      break;
+
       default:
         printUsage(argv[0]);
         exit(6);
@@ -137,7 +142,7 @@ int main(int argc, char** argv) {
     exit(6);
   }
 
-  validateArgs(configPath, mainstreamPipe, substreamPipe, soundStreamPipe);
+  validateArgs(configPath, mainstreamPipe, substreamPipe, audioStreamPipe);
   
   // Read configuration
   std::ifstream configFile(configPath);
@@ -184,24 +189,30 @@ int main(int argc, char** argv) {
 		char const* streamName = "mainstream";
 		
 		ServerMediaSession* sms = ServerMediaSession::createNew(*env, streamName, streamName,descriptionString);
+
+    if (audioStreamPipe != NULL) {
+      printf("Audio enabled \n");
+      Boolean convertToULaw = False;
+      sms->addSubsession(WAVAudioFileServerMediaSubsession
+        ::createNew(*env, audioStreamPipe, reuseFirstSource, convertToULaw));
+    }
+
 		sms->addSubsession(H265VideoFileServerMediaSubsession::createNew(*env, mainstreamPipe, reuseFirstSource));
 		rtspServer->addServerMediaSession(sms);
 		announceStream(rtspServer, sms, streamName, mainstreamPipe);
 	}
 	
 
-  if(soundStreamPipe != NULL) {
-    char const* streamName = "soundstream";
-    ServerMediaSession* sms = ServerMediaSession::createNew(*env, streamName, descriptionString);
-    sms->addSubsession(ADTSAudioFileServerMediaSubsession::createNew(*env, soundStreamPipe, reuseFirstSource));
-    rtspServer->addServerMediaSession(sms);
-    announceStream(rtspServer, sms, streamName, soundStreamPipe);
-  }
-
 	if(substreamPipe != NULL) {
 		char const* streamName = "substream";
 		
 		ServerMediaSession* sms = ServerMediaSession::createNew(*env, streamName, streamName,descriptionString);
+     if (audioStreamPipe != NULL) {
+      printf("Audio enabled \n");
+      Boolean convertToULaw = False;
+      sms->addSubsession(WAVAudioFileServerMediaSubsession
+        ::createNew(*env, audioStreamPipe, reuseFirstSource, convertToULaw));
+    }
 		sms->addSubsession(H265VideoFileServerMediaSubsession::createNew(*env, substreamPipe, reuseFirstSource));
 		rtspServer->addServerMediaSession(sms);
 		announceStream(rtspServer, sms, streamName, substreamPipe);
@@ -212,24 +223,27 @@ int main(int argc, char** argv) {
 		char const* streamName = "mainstream";
 		
 		ServerMediaSession* sms = ServerMediaSession::createNew(*env, streamName, streamName, descriptionString);
+    if (audioStreamPipe != NULL) {
+      printf("Audio enabled \n");
+      Boolean convertToULaw = False;
+      sms->addSubsession(WAVAudioFileServerMediaSubsession
+        ::createNew(*env, audioStreamPipe, reuseFirstSource, convertToULaw));
+    }
 		sms->addSubsession(H264VideoFileServerMediaSubsession::createNew(*env, mainstreamPipe, reuseFirstSource));
 		rtspServer->addServerMediaSession(sms);
 		announceStream(rtspServer, sms, streamName, mainstreamPipe);
 	}
 
-  
-  if(soundStreamPipe != NULL) {
-    char const* streamName = "soundstream";
-    ServerMediaSession* sms = ServerMediaSession::createNew(*env, streamName, descriptionString);
-    sms->addSubsession(ADTSAudioFileServerMediaSubsession::createNew(*env, soundStreamPipe, reuseFirstSource));
-    rtspServer->addServerMediaSession(sms);
-    announceStream(rtspServer, sms, streamName, soundStreamPipe);
-  }
-	
 	if(substreamPipe != NULL) {
 		char const* streamName = "substream";
 		
 		ServerMediaSession* sms = ServerMediaSession::createNew(*env, streamName, streamName, descriptionString);
+    if (audioStreamPipe != NULL) {
+      printf("Audio enabled \n");
+      Boolean convertToULaw = False;
+      sms->addSubsession(WAVAudioFileServerMediaSubsession
+        ::createNew(*env, audioStreamPipe, reuseFirstSource, convertToULaw));
+    }
 		sms->addSubsession(H264VideoFileServerMediaSubsession::createNew(*env, substreamPipe, reuseFirstSource));
 		rtspServer->addServerMediaSession(sms);
 		announceStream(rtspServer, sms, streamName, substreamPipe);

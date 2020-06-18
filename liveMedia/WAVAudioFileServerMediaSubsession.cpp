@@ -101,17 +101,38 @@ FramedSource* WAVAudioFileServerMediaSubsession
     WAVAudioFileSource* wavSource = WAVAudioFileSource::createNew(envir(), fFileName);
     if (wavSource == NULL) break;
 
-    // Get attributes of the audio source:
+   
 
-    fAudioFormat = wavSource->getAudioFormat();
-    fBitsPerSample = wavSource->bitsPerSample();
+
+  // Get attributes of the audio source:
+  // ################# CUSTOM EDIT SOURCE CODE OF LIBARY TO SUPPORT OUR PCM AUDIO INPUT ##################
+
+    /*
+    Because our source audio input is
+    pcm a-law 8 bit we don't have header file (with metadata)
+    like wav file has. so we have to put the audio metadata 
+    manually. So we have to change the code here of the libary. 
+    */
+
+   // WA_PCMA - pcm a-law
+    fAudioFormat =  WA_PCMA; // wavSource->getAudioFormat();
+
+    // PCM A-LAW has 8 bit
+    fBitsPerSample = 8; // wavSource->bitsPerSample();
     // We handle only 4,8,16,20,24 bits-per-sample audio:
     if (fBitsPerSample%4 != 0 || fBitsPerSample < 4 || fBitsPerSample > 24 || fBitsPerSample == 12) {
       envir() << "The input file contains " << fBitsPerSample << " bit-per-sample audio, which we don't handle\n";
       break;
     }
-    fSamplingFrequency = wavSource->samplingFrequency();
-    fNumChannels = wavSource->numChannels();
+
+    /* When i played the pcm file with ffplay it played
+     it in 8000hz and one channel, so 8000 should be what we need */
+    fSamplingFrequency = 8000; // wavSource->samplingFrequency();
+    fNumChannels = 1; // wavSource->numChannels();
+  
+  // ############################### END OF CUSTOM EDIT ################################
+
+
     unsigned bitsPerSecond = fSamplingFrequency*fBitsPerSample*fNumChannels;
 
     fFileDuration = (float)((8.0*wavSource->numPCMBytes())/(fSamplingFrequency*fNumChannels*fBitsPerSample));
