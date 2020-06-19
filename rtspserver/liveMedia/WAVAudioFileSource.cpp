@@ -31,11 +31,18 @@ WAVAudioFileSource::createNew(UsageEnvironment& env, char const* fileName) {
     if (fid == NULL) break;
 
     WAVAudioFileSource* newSource = new WAVAudioFileSource(env, fid);
+
+    /*
+
+    Commented out Because our file doesn't have header 
+    we add the metadata manually in WAVAudioFileServerMediaSubsession.cpp
+
     if (newSource != NULL && newSource->bitsPerSample() == 0) {
       // The WAV file header was apparently invalid.
       Medium::close(newSource);
       break;
     }
+  */
 
     newSource->fFileSize = (unsigned)GetFileSize(fileName, fid);
 

@@ -99,14 +99,14 @@ void printUsage(char* binaryName) {
 
 int main(int argc, char** argv) {
   json config;
-  OutPacketBuffer::maxSize = 600000;
+  OutPacketBuffer::maxSize = 65402;
   int opt;
   char* configPath = (char*)"config.json";
   char* mainstreamPipe = NULL;
   char* substreamPipe = NULL;
   char* audioStreamPipe = NULL;
   
-  while ((opt = getopt (argc, argv, "m:s:c:h:a")) != -1)
+  while ((opt = getopt (argc, argv, "a:m:s:c:h:")) != -1)
   {
 	  switch(opt) {
       case 'c':
@@ -189,6 +189,8 @@ int main(int argc, char** argv) {
 		char const* streamName = "mainstream";
 		
 		ServerMediaSession* sms = ServerMediaSession::createNew(*env, streamName, streamName,descriptionString);
+
+    printf("audiostreamPipe is %s \n", audioStreamPipe);
 
     if (audioStreamPipe != NULL) {
       printf("Audio enabled \n");
