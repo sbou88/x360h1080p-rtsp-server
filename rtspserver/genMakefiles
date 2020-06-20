@@ -16,10 +16,10 @@ subdirs="liveMedia groupsock UsageEnvironment BasicUsageEnvironment rtspserver"
 for subdir in $subdirs
 do
     /bin/rm -f $subdir/Makefile
-    cat $subdir/Makefile.head config.$platform $subdir/Makefile.tail > $subdir/Makefile
+    cat $subdir/Makefile.head configs/config.$platform $subdir/Makefile.tail > $subdir/Makefile
     chmod a-w $subdir/Makefile
 done
 
 /bin/rm -f Makefile
-cat Makefile.head config.$1 Makefile.tail > Makefile
+cat Makefile.head configs/config.$1 Makefile.tail > Makefile
 chmod a-w Makefile
