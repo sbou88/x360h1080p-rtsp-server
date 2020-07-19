@@ -17,7 +17,9 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 // A test program that demonstrates how to stream - via unicast RTP
 // - various kinds of file on demand, using a built-in RTSP server.
 // main program
-
+#include <unistd.h>
+#include <cstdlib>
+#include <signal.h>
 #include <iostream>
 #include <fstream>
 #include "liveMedia.hh"
@@ -25,6 +27,11 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 #include "json.hpp"
 
 using json = nlohmann::json;
+
+
+// Used to catch ctrl c and then change from 0 to any other value for stop the program
+// Because we have to close the server before stopping so we will be able to reuse the ports
+char stopRTSP = 0; // note: char, not char*
 
 UsageEnvironment* env;
 
@@ -59,7 +66,19 @@ bool fileExists(char* filePath) {
   return true;
 }
 
+
+void signal_callback_handler(int signum) {
+   std::cout << "Caught signal " << signum << std::endl;
+   std::cout << "Terminating program" << std::endl;
+   // Terminate program
+   stopRTSP = ~0; // any value other than 0 will work.
+   exit(signum);
+}
+
+
+
 void validateArgs(char* configPath, char* mainstreamPipe, char* substreamPipe, char* audioStreamPipe) {
+
 
   if(!fileExists(configPath)) {
     std::cout << "Configuration file does not exist.\n";
@@ -105,6 +124,10 @@ int main(int argc, char** argv) {
   char* mainstreamPipe = NULL;
   char* substreamPipe = NULL;
   char* audioStreamPipe = NULL;
+
+
+  signal(SIGINT, signal_callback_handler); // catch ctrl + c and stop program
+  
   
   while ((opt = getopt (argc, argv, "a:m:s:c:h:")) != -1)
   {
@@ -252,7 +275,7 @@ int main(int argc, char** argv) {
 	}
   }
 
-  env->taskScheduler().doEventLoop(); // does not return
+  env->taskScheduler().doEventLoop(&stopRTSP); // does not return
   return 0; // only to prevent compiler warning
 }
 
