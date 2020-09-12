@@ -14,7 +14,7 @@ deploy:
   file: rtspserver/rtspserver
   on:
     tags: true
-    repo: telmomarques/x360h1080p-rtsp-server
+    repo: sbou88/x360h1080p-rtsp-server
   skip_cleanup: true
   prerelease: true
   
